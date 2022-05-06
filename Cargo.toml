@@ -1,0 +1,9 @@
+[package]
+name = "revl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+libc = "~0.2"
+embedded-time = "~0.12"
+evl-sys = { version = "^0.20.1", git = "https://source.denx.de/Xenomai/xenomai4/evl-sys" }
