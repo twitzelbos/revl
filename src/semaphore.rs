@@ -1,4 +1,4 @@
-//! Real-time counting semaphore.
+//! Counting semaphore.
 
 use std::cell::UnsafeCell;
 use std::ffi::CString;
@@ -133,7 +133,7 @@ impl Semaphore {
     pub fn get(&self) -> Result<(), Error> {
         let ret: c_int = unsafe { evl_get_sem(self.0.get()) };
         match ret {
-            0.. => return Ok(()),
+            0 => return Ok(()),
             _ => return Err(Error::from_raw_os_error(-ret)),
         };
     }
@@ -147,7 +147,7 @@ impl Semaphore {
     pub fn put(&self) -> Result<(), Error> {
         let ret: c_int = unsafe { evl_put_sem(self.0.get()) };
         match ret {
-            0.. => return Ok(()),
+            0 => return Ok(()),
             _ => return Err(Error::from_raw_os_error(-ret)),
         };
     }
