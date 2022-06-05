@@ -1,6 +1,10 @@
 //! Clock interface.
 
-use libc::c_int;
+use libc::{
+    c_int,
+    c_long,
+    time_t,
+};
 use std::io;
 use embedded_time::{
     clock,
@@ -38,8 +42,8 @@ impl MonoClock {
         let secs: Seconds<u64> = Seconds::try_from(dur).unwrap();
         let nsecs: Nanoseconds<u64> = Nanoseconds::<u64>::try_from(dur).unwrap() % secs;
         let date = timespec {
-            tv_sec: secs.integer() as i64,
-            tv_nsec: nsecs.integer() as i64,
+            tv_sec: secs.integer() as time_t,
+            tv_nsec: nsecs.integer() as c_long,
         };
         let ret: c_int = unsafe { evl_sleep_until(BuiltinClock::MONOTONIC as c_int, &date) };
         match ret {
