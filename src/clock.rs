@@ -19,7 +19,7 @@ use evl_sys::{
     BuiltinClock
 };
 
-pub struct CoreClock(isize);
+pub struct CoreClock(BuiltinClock);
 
 impl Clock for CoreClock {
     type T = u64;
@@ -58,5 +58,5 @@ impl CoreClock {
 
 /// EVL implements two builtin clocks: monotonic (aka POSIX
 /// CLOCK_MONOTONIC) and adjustable wallclock (aka POSIX CLOCK_REALTIME).
-pub const STEADY_CLOCK: CoreClock = CoreClock(BuiltinClock::MONOTONIC as isize);
-pub const WALL_CLOCK: CoreClock = CoreClock(BuiltinClock::REALTIME as isize);
+pub const STEADY_CLOCK: CoreClock = CoreClock(BuiltinClock::MONOTONIC);
+pub const WALL_CLOCK: CoreClock = CoreClock(BuiltinClock::REALTIME);
