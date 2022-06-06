@@ -59,4 +59,4 @@ impl CoreClock {
 /// EVL implements two builtin clocks: monotonic (aka POSIX
 /// CLOCK_MONOTONIC) and adjustable wallclock (aka POSIX CLOCK_REALTIME).
 pub const STEADY_CLOCK: CoreClock = CoreClock(BuiltinClock::MONOTONIC);
-pub const WALL_CLOCK: CoreClock = CoreClock(BuiltinClock::REALTIME);
+pub const SYSTEM_CLOCK: CoreClock = CoreClock(BuiltinClock::REALTIME);
