@@ -8,25 +8,25 @@ use evl_sys::{
 pub struct SchedAttrs(pub(crate) evl_sched_attrs);
 
 pub struct SchedFifo {
-    prio: i32,
+    pub prio: i32,
 }
 
 pub struct SchedRR {
-    prio: i32,
+    pub prio: i32,
 }
 
 pub struct SchedWeak {
-    prio: i32,
+    pub prio: i32,
 }
 
 pub struct SchedQuota {
-    group: i32,
-    prio: i32,
+    pub group: i32,
+    pub prio: i32,
 }
 
 pub struct SchedTP {
-    part: i32,
-    prio: i32,
+    pub part: i32,
+    pub prio: i32,
 }
 
 pub trait PolicyParam {
