@@ -19,7 +19,7 @@ use evl_sys::{
     BuiltinClock
 };
 
-pub struct CoreClock(BuiltinClock);
+pub struct CoreClock(pub(crate) BuiltinClock);
 
 impl Clock for CoreClock {
     type T = u64;

@@ -113,6 +113,12 @@ pub struct MutexGuard<'a, T: ?Sized + 'a> {
     __data: &'a UnsafeCell<T>,
 }
 
+impl<'a, T: ?Sized> MutexGuard<'a, T> {
+    pub(crate) fn as_raw_mut(&self) -> &'a mut evl_mutex {
+        unsafe { &mut *self.__mutex.0.get() }
+    }
+}
+
 impl<'mutex, T: ?Sized> Deref for MutexGuard<'mutex, T> {
     type Target = T;
 

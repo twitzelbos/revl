@@ -90,7 +90,7 @@ impl Builder {
     }
 }
 
-pub struct Thread(c_int);
+pub struct Thread(pub(crate) c_int);
 
 unsafe impl Send for Thread {}
 unsafe impl Sync for Thread {}
