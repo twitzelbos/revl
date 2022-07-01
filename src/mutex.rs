@@ -236,7 +236,7 @@ impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     }
 }
 
-pub struct CoreMutex(UnsafeCell<evl_mutex>);
+struct CoreMutex(UnsafeCell<evl_mutex>);
 
 impl Drop for CoreMutex {
     fn drop(&mut self) {
@@ -253,7 +253,7 @@ impl fmt::Debug for CoreMutex {
 }
 
 impl CoreMutex {
-    pub fn new(builder: Builder) -> Result<Self, Error> {
+    fn new(builder: Builder) -> Result<Self, Error> {
         let this = Self(UnsafeCell::new(unsafe {
             MaybeUninit::<evl_mutex>::zeroed().assume_init()
         }));
@@ -292,14 +292,14 @@ impl CoreMutex {
             _ => return Err(Error::from_raw_os_error(-ret)),
         };
     }
-    pub fn lock(&self) -> Result<(), Error> {
+    fn lock(&self) -> Result<(), Error> {
         let ret: c_int = unsafe { evl_lock_mutex(self.0.get()) };
         match ret {
             0 => return Ok(()),
             _ => return Err(Error::from_raw_os_error(-ret)),
         };
     }
-    pub fn unlock(&self) {
+    fn unlock(&self) {
         unsafe {
             evl_unlock_mutex(self.0.get());
         };
