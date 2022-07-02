@@ -34,12 +34,12 @@ impl Builder {
     ///
     /// The available configurations are:
     ///
-    /// - [`name`]: specifies an associated name for the thread
-    /// - [`visible`]: specifies the visibility for the thread in the
+    /// - `name`: specifies an associated name for the thread
+    /// - `visible`: specifies the visibility for the thread in the
     /// [/dev/evl file hierarchy](https://evlproject.org/core/user-api/#evl-fs-hierarchy)
-    /// - [`observable`]: specifies whether the thread may be observed
+    /// - `observable`: specifies whether the thread may be observed
     /// for health monitoring purpose.
-    /// - [`unicast`]: if observable, specifies whether notifications
+    /// - `unicast`: if observable, specifies whether notifications
     /// should be sent to a single observer instead of broadcast
     /// to all of them.
     ///
@@ -104,7 +104,7 @@ impl Thread {
     ///
     /// # Arguments
     ///
-    /// * [`builder`]: a builder struct containing the EVL-specific
+    /// * `builder`: a builder struct containing the EVL-specific
     /// properties of the thread.
     ///
     /// # Errors

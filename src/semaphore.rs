@@ -62,7 +62,7 @@ impl Semaphore {
     ///
     /// # Arguments
     ///
-    /// * [`builder`]: a builder struct containing the properties of
+    /// * `builder`: a builder struct containing the properties of
     /// the new semaphore.
     ///
     /// # Errors

@@ -63,7 +63,7 @@ impl Flags {
     ///
     /// # Arguments
     ///
-    /// * [`builder`]: a builder struct containing the properties of
+    /// * `builder`: a builder struct containing the properties of
     /// the new flag group.
     ///
     /// # Errors

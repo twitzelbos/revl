@@ -127,9 +127,6 @@ impl Builder {
     }
     /// Create a mutex from the current properties.
     ///
-    /// ```no_run
-    /// 
-    /// ```
     pub fn create<T>(self, data: T) -> Result<Mutex<T>, Error> {
         Mutex::new(data, self)
     }
