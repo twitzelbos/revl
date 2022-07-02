@@ -1,19 +1,23 @@
-/// A ring queue is composed of two lockless ring buffers and a data
-/// vector: dq stores indices of messages pending receive which are
-/// available at the corresponding cells from the data vector, fq
-/// stores indices of free cells into the data vector. fq + dq covers
-/// the whole index space, which is (1 << ORDER) long.
-///
-/// In practice, an index is pulled from fq, the data vector is filled
-/// with a message at this index next, which is eventually pushed to
-/// dq. The receiver pulls the next available index from dq, extracts
-/// the message at the corresponding position in the vector then
-/// releases the consumed index to fq.
-///
-/// The lighweight ring buffers are based on Ruslan Nikolaev's
-/// Scalable Circular Queue (single-width CAS variant) ported to Rust:
-/// http://drops.dagstuhl.de/opus/volltexte/2019/11335/pdf/LIPIcs-DISC-2019-28.pdf
-/// https://github.com/rusnikola/lfqueue.git
+//! Lockless, bounded FIFO queue.
+//!
+//! A ring queue is composed of two lockless ring buffers and a data
+//! vector: dq stores indices of messages pending receive which are
+//! available at the corresponding cells from the data vector, fq
+//! stores indices of free cells into the data vector. fq + dq covers
+//! the whole index space, which is (1 << ORDER) long. The
+//! implementation performs no dynamic memory allocation.
+//!
+//! In practice, an index is pulled from fq, the data vector is filled
+//! with a message at this index next, which is eventually pushed to
+//! dq. The receiver pulls the next available index from dq, extracts
+//! the message at the corresponding position in the vector then
+//! releases the consumed index to fq.
+//!
+//! The lighweight ring buffers are based on Ruslan Nikolaev's
+//! Scalable Circular Queue ([single-width CAS
+//! variant](https://github.com/rusnikola/lfqueue.git)) ported to
+//! Rust. See
+//! <http://drops.dagstuhl.de/opus/volltexte/2019/11335/pdf/LIPIcs-DISC-2019-28.pdf>.
 
 use std::sync::{
     Arc,
