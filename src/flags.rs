@@ -1,4 +1,11 @@
 //! Event flag group.
+//!
+//! An event flag group is an efficient and lightweight mechanism for
+//! synchronizing multiple threads, based on a 32bit value, in which
+//! each individual bit represents the state of a particular event
+//! defined by the application. Therefore, each group defines 32
+//! individual events, from bit #0 to bit #31. Threads can wait for
+//! bits to be posted by other threads.
 
 use std::cell::UnsafeCell;
 use std::ffi::CString;
@@ -59,25 +66,21 @@ unsafe impl Send for Flags {}
 unsafe impl Sync for Flags {}
 
 impl Flags {
-    /// Create an EVL event flag group.
-    ///
-    /// # Arguments
-    ///
-    /// * `builder`: a builder struct containing the properties of
-    /// the new flag group.
+    /// Create an EVL event flag group, retrieving the settings from a
+    /// [`builder struct`](Builder).
     ///
     /// # Errors
     ///
-    /// * Error(AlreadyExists) means the group name is conflicting
-    /// with an existing group name.
+    /// * [`AlreadyExists`][`std::io::ErrorKind`] means the group name
+    /// is conflicting with an existing group name.
     ///
-    /// * Error(InvalidInput) means that the group name contains
-    /// invalid characters: such name must contain only valid
-    /// characters in the context of a Linux file name.
+    /// * [`InvalidInput`][`std::io::ErrorKind`] means that the group
+    /// name contains invalid characters: such name must contain only
+    /// valid characters in the context of a Linux file name.
     ///
-    /// * Error(Other) may mean that either the EVL core is not
-    /// enabled in the kernel, or there is an ABI mismatch between the
-    /// underlying [evl-sys
+    /// * `Other`][`std::io::ErrorKind`] may mean that either the EVL
+    /// core is not enabled in the kernel, or there is an ABI mismatch
+    /// between the underlying [evl-sys
     /// crate](https://source.denx.de/Xenomai/xenomai4/evl-sys) and
     /// the EVL core. See [these
     /// explanations](https://evlproject.org/core/under-the-hood/abi/)
@@ -85,12 +88,23 @@ impl Flags {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// use revl::flags::{Builder, Flags};
     ///
     /// fn create_a_flag_group(initval: u32) -> Result<Flags, std::io::Error> {
     ///     let props = Builder::new().name("some_event_flags").public().init_value(initval);
     ///     let me = Flags::new(props)?;
+    ///     Ok(me)
+    /// }
+    /// ```
+    ///
+    /// Alternatively,
+    ///
+    /// ```no_run
+    /// use revl::flags::{Builder, Flags};
+    ///
+    /// fn create_a_flag_group(initval: u32) -> Result<Flags, std::io::Error> {
+    ///     let me = Builder::new().name("some_event_flags").public().init_value(initval).create()?;
     ///     Ok(me)
     /// }
     /// ```
@@ -141,9 +155,9 @@ impl Flags {
     /// passed back to the waiter leading the wait queue then reset to
     /// zero atomically before the latter returns.
     ///
-    /// # Example
+    /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// use revl::flags::Flags;
     ///
     /// fn wait_flags(fgroup: &Flags) -> Result<u32, std::io::Error> {
@@ -163,9 +177,9 @@ impl Flags {
     /// Attempt to read from the flag group, without blocking the
     /// caller if there is none.
     ///
-    /// # Example
+    /// # Examples
     ///
-    /// ```rustc
+    /// ```no_runc
     /// use revl::flags::Flags;
     ///
     /// if let Some(bits) = fgroup.trywait() {
@@ -189,7 +203,7 @@ impl Flags {
     /// altering its state (i.e. the flag group is not zeroed if some
     /// events are pending).
     ///
-    /// # Example
+    /// # Examples
     ///
     /// ```
     /// if let Some(bits) = fgroup.peek() {
@@ -214,9 +228,9 @@ impl Flags {
     /// wait(), the thread heading the wait queue is unblocked,
     /// receiving all pending events atomically.
     //
-    /// # Example
+    /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// use revl::flags::Flags;
     ///
     /// fn post_flags(fgroup: &Flags, bits: u32) -> Result<(), std::io::Error> {
