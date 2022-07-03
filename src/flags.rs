@@ -182,14 +182,14 @@ impl Flags {
     /// ```no_runc
     /// use revl::flags::Flags;
     ///
-    /// if let Some(bits) = fgroup.trywait() {
+    /// if let Some(bits) = fgroup.try_wait() {
     ///    println!("ok! got events {}", bits);
     /// } else {
     ///    println!("no events pending");
     /// }
     /// ```
     ///
-    pub fn trywait(&self) -> Option<u32> {
+    pub fn try_wait(&self) -> Option<u32> {
 	let mut mask = MaybeUninit::<i32>::uninit();
         let ret: c_int = unsafe { evl_trywait_flags(self.0.get(), mask.as_mut_ptr()) };
         match ret {
