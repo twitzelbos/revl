@@ -3,6 +3,7 @@
 //! EVL threads are native threads originally, which are extended with
 //! real-time capabilities once attached to the EVL core.
 
+use std::thread;
 use std::ptr;
 use std::os::raw::c_int;
 use std::io::Error;
@@ -72,21 +73,90 @@ impl Builder {
         self.unicast = true;
         self
     }
-    /// Attach the calling thread to the EVL core.
+    /// Attach the calling thread to the EVL core, consuming the
+    /// builder.
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// use revl::thread::Builder;
+    /// ```no_run
+    /// use revl::thread;
     ///
     /// fn attach_current_thread_using_builder() -> Result<Thread, std::io::Error> {
-    ///     let me = Builder::new().name("myself").private().observable().create()?;
+    ///     let me = thread::Builder::new()
+    ///		.name("myself")
+    ///		.private().
+    ///		observable()
+    ///		.attach()?;
     ///     Ok(me)
     /// }
     /// ```
     ///
     pub fn attach(self) -> Result<Thread, Error> {
         Thread::attach(self)
+    }
+    /// Spawn a new EVL thread using the current properties, consuming
+    /// the builder.
+    ///
+    /// On success, this call returns a join handle, which implements
+    /// the [`join()`][`thread::JoinHandle::join`] method that can be
+    /// used to wait for the spawned thread to exit.
+    ///
+    /// The spawned thread may outlive the caller (unless the caller
+    /// thread is the main thread; the whole process is terminated
+    /// when the main thread finishes). The join handle can be used to
+    /// block on termination of the spawned thread, including
+    /// recovering its panics.
+    ///
+    /// The reason for the `'static + Send` bounds required from the
+    /// closure type are explained in the documentation of the
+    /// standard [`std::thread::spawn()`][`thread::spawn`] call.
+    ///
+    /// # Errors
+    ///
+    /// On error, this call may directly return an error status from
+    /// [`std::thread::spawn()`][`thread::spawn`] without starting the
+    /// thread. Otherwise, joining the spawned thread may return an
+    /// error status related to attaching the thread to the EVL
+    /// core. See below.
+    ///
+    /// ## Join errors
+    ///
+    /// [`AlreadyExists`][`std::io::ErrorKind`] is returned if an
+    /// existing thread already goes by the same name.
+    ///
+    /// [`InvalidInput`][`std::io::ErrorKind`] may denote a badly formed
+    /// name. Check these
+    /// [rules](https://evlproject.org/core/user-api/#element-naming-convention).
+    ///
+    /// [`PermissionDenied`][`std::io::ErrorKind`] means that the
+    /// calling thread is not allowed to lock memory by a call to
+    /// [mlockall(2)](https://man7.org/linux/man-pages/man2/mlock.2.html),
+    /// which is a showstopper for real-time execution.
+    ///
+    /// All other kinds report operating system level errors, see the
+    /// complete list from the C interface available from
+    /// <https://evlproject.org/core/user-api/thread/#evl_attach_thread>.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use revl::thread;
+    ///
+    /// let builder = thread::Builder::new();
+    ///
+    /// let handle = builder.spawn(|| {
+    ///     // your EVL thread code
+    /// }).unwrap();
+    ///
+    /// handle.join().unwrap();
+    /// ```
+    pub fn spawn<F>(self, f: F) -> Result<thread::JoinHandle<Result<(), Error>>, Error>
+    where F: FnOnce() + Send + 'static
+    {
+        Ok(thread::Builder::new().spawn(move || -> Result<(), Error> {
+            self.attach()?;
+            Ok(f())
+        })?)
     }
 }
 
