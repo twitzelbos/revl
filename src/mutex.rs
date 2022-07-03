@@ -22,6 +22,7 @@ use evl_sys::{
     evl_close_mutex,
     evl_create_mutex,
     evl_lock_mutex,
+    evl_trylock_mutex,
     evl_mutex,
     evl_unlock_mutex,
     BuiltinClock,
@@ -161,12 +162,60 @@ impl<T> Mutex<T> {
     /// mutex. Alternatively, calling [`drop`] on the guard releases
     /// the mutex too.
     ///
+    /// # Errors
+    ///
+    /// [`WouldBlock`][`std::io::ErrorKind`] is returned if the
+    /// request would cause the mutex to be locked more than u32::MAX
+    /// times.
+    ///
     /// ```no_run
+    /// use revl::thread::Thread;
     /// use revl::mutex::Mutex;
-    /// 
+    ///
+    /// let mutex = Arc::new(Mutex::new(0));
+    /// let c_mutex = Arc::clone(&mutex);
+    ///
+    /// Thread::spawn(move || {
+    ///     *c_mutex.lock().unwrap() = 42;
+    /// }).join().expect("Thread::spawn failed");
+    /// assert_eq!(*mutex.lock().unwrap(), 42);
+    ///
     /// ```
     pub fn lock(&self) -> Result<MutexGuard<T>, Error> {
         self.mutex.lock()?;
+        Ok(MutexGuard {
+            __mutex: &self.mutex,
+            __data: &self.data,
+        })
+    }
+    /// Try locking the mutex. On success, this call returns an RAII
+    /// guard which guarantees exclusive read/write access to the
+    /// inner data until such guard goes out of scope, releasing the
+    /// mutex. On contention, the caller does not block waiting for
+    /// access, but returns with an error instead.
+    ///
+    /// # Errors
+    ///
+    /// WouldBlock is returned if the mutex is already locked.
+    ///
+    /// ```no_run
+    /// use revl::thread::Thread;
+    /// use revl::mutex::Mutex;
+    ///
+    /// let mutex = Arc::new(Mutex::new(0));
+    /// let c_mutex = Arc::clone(&mutex);
+    ///
+    /// Thread::spawn(move || {
+    ///     if let Ok(ref mut g) = c_mutex.try_lock() {
+    ///         **g = 42;
+    ///     } else {
+    ///         println!("try_lock failed");
+    ///     }
+    /// }).join().expect("Thread::spawn failed");
+    /// assert_eq!(*mutex.lock().unwrap(), 42);
+    /// ```
+    pub fn try_lock(&self) -> Result<MutexGuard<T>, Error> {
+        self.mutex.try_lock()?;
         Ok(MutexGuard {
             __mutex: &self.mutex,
             __data: &self.data,
@@ -291,6 +340,13 @@ impl CoreMutex {
     }
     fn lock(&self) -> Result<(), Error> {
         let ret: c_int = unsafe { evl_lock_mutex(self.0.get()) };
+        match ret {
+            0 => return Ok(()),
+            _ => return Err(Error::from_raw_os_error(-ret)),
+        };
+    }
+    fn try_lock(&self) -> Result<(), Error> {
+        let ret: c_int = unsafe { evl_trylock_mutex(self.0.get()) };
         match ret {
             0 => return Ok(()),
             _ => return Err(Error::from_raw_os_error(-ret)),
