@@ -58,25 +58,22 @@ unsafe impl Send for Semaphore {}
 unsafe impl Sync for Semaphore {}
 
 impl Semaphore {
-    /// Create an EVL semaphore.
-    ///
-    /// # Arguments
-    ///
-    /// * `builder`: a builder struct containing the properties of
-    /// the new semaphore.
+    /// Create an EVL semaphore, retrieving the settings from a
+    /// [`builder struct`](Builder).
     ///
     /// # Errors
     ///
-    /// * Error(AlreadyExists) means the semaphore name is conflicting
-    /// with an existing semaphore name.
+    /// * [`AlreadyExists`][`std::io::ErrorKind`] means the semaphore
+    /// name is conflicting with an existing semaphore name.
     ///
-    /// * Error(InvalidInput) means that the semaphore name contains
-    /// invalid characters: such name must contain only valid
-    /// characters in the context of a Linux file name.
+    /// * [`InvalidInput`][`std::io::ErrorKind`] means that the
+    /// semaphore name contains invalid characters: such name must
+    /// contain only valid characters in the context of a Linux file
+    /// name.
     ///
-    /// * Error(Other) may mean that either the EVL core is not
-    /// enabled in the kernel, or there is an ABI mismatch between the
-    /// underlying [evl-sys
+    /// * [`Other`][`std::io::ErrorKind`] may mean that either the EVL
+    /// core is not enabled in the kernel, or there is an ABI mismatch
+    /// between the underlying [evl-sys
     /// crate](https://source.denx.de/Xenomai/xenomai4/evl-sys) and
     /// the EVL core. See [these
     /// explanations](https://evlproject.org/core/under-the-hood/abi/)
@@ -84,7 +81,7 @@ impl Semaphore {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
     /// use revl::semaphore::{Builder, Semaphore};
     ///
     /// fn create_a_semaphore(initval: u32) -> Result<Semaphore, std::io::Error> {
@@ -137,7 +134,7 @@ impl Semaphore {
             _ => return Err(Error::from_raw_os_error(-ret)),
         };
     }
-    pub fn tryget(&self) -> bool {
+    pub fn try_get(&self) -> bool {
         let ret: c_int = unsafe { evl_tryget_sem(self.0.get()) };
         match ret {
             0 => return true,
