@@ -33,7 +33,7 @@ pub trait PolicyParam {
     fn to_attr(&self) -> SchedAttrs;
 }
 
-fn get_zero_attrs() -> SchedAttrs {
+pub fn get_zero_attrs() -> SchedAttrs {
     SchedAttrs(unsafe { MaybeUninit::<evl_sched_attrs>::zeroed().assume_init() })
 }
 

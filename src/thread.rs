@@ -5,6 +5,7 @@
 //! document](https://evlproject.org/core/user-api/thread/) for an
 //! introduction to EVL threads.
 
+use core::mem::MaybeUninit;
 use std::thread;
 use std::ptr;
 use std::os::raw::c_int;
@@ -16,9 +17,10 @@ use evl_sys::{
     evl_demote_thread,
     evl_sched_attrs,
     evl_set_schedattr,
+    evl_get_schedattr,
     CloneFlags,
 };
-use crate::sched::*;
+use crate::sched;
 
 /// A thread factory, which can be used in order to configure the
 /// properties of a new EVL thread.
@@ -319,11 +321,19 @@ impl Thread {
     ///     t.set_sched(SchedFifo { prio: 42 })
     /// }
     /// ```
-    pub fn set_sched(&self, param: impl PolicyParam) -> Result<(), Error> {
+    pub fn set_sched(&self, param: impl sched::PolicyParam) -> Result<(), Error> {
 	let c_attrs_ptr: *const evl_sched_attrs = &param.to_attr().0;
 	let ret: c_int = unsafe { evl_set_schedattr(self.0, c_attrs_ptr) };
 	match ret {
 	    0 => return Ok(()),
+            _ => return Err(Error::from_raw_os_error(-ret)),
+	}
+    }
+    pub fn get_sched(&self) -> Result<impl sched::PolicyParam, Error> {
+	let mut attrs = MaybeUninit::<evl_sched_attrs>::uninit();
+	let ret: c_int = unsafe { evl_get_schedattr(self.0, attrs.as_mut_ptr()) };
+	match ret {
+	    0 => return Ok(sched::SchedFifo { prio: 2 }),
             _ => return Err(Error::from_raw_os_error(-ret)),
 	}
     }
