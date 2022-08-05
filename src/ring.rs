@@ -80,7 +80,7 @@ pub struct Ring<const ORDER: usize> {
 }
 
 impl<const ORDER: usize> Ring<ORDER> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let nr_cells = Ring::<ORDER>::get_nr_cells();
         let mut this = Self {
             // To maintain every single ring entry, we need two cells.
@@ -93,7 +93,7 @@ impl<const ORDER: usize> Ring<ORDER> {
         this.cells.resize_with(nr_cells, || { RING_EMPTY_CELL });
         this
     }
-    fn fill(&mut self) {
+    pub fn fill(&mut self) {
         let half: usize = Ring::<ORDER>::get_nr_entries();
         let full: usize = Ring::<ORDER>::get_nr_cells();
         for n in 0..half {
@@ -110,7 +110,7 @@ impl<const ORDER: usize> Ring<ORDER> {
         self.tail.d.store(half, Relaxed);
         self.threshold.d.store(Ring::<ORDER>::get_threshold(half, full), Relaxed);
     }
-    fn enqueue(&self, eidx: usize) {
+    pub fn enqueue(&self, eidx: usize) {
         let mut eidx = eidx;
         let half: usize = Ring::<ORDER>::get_nr_entries();
         let full: usize = Ring::<ORDER>::get_nr_cells();
@@ -141,7 +141,7 @@ impl<const ORDER: usize> Ring<ORDER> {
             break;
         }
     }
-    fn dequeue(&self) -> Option<usize> {
+    pub fn dequeue(&self) -> Option<usize> {
         if self.threshold.d.load(Relaxed) < 0 {
             return None;
         }
@@ -192,7 +192,7 @@ impl<const ORDER: usize> Ring<ORDER> {
             }
         }
     }
-    const fn get_nr_entries() -> usize {
+    pub const fn get_nr_entries() -> usize {
         1usize << ORDER
     }
     const fn get_nr_cells() -> usize {
@@ -271,7 +271,7 @@ impl<T : Default, const ORDER: usize> RingQueue<T, ORDER> {
             fence(Release);
             unsafe { (*self.data.get())[eidx] = msg; }
             // We have as many free slots than we have data cells, so
-            // enqueing cannot fail by construction.
+            // enqueuing cannot fail by construction.
             self.dq.enqueue(eidx);
             Some(())
         } else {
