@@ -76,6 +76,9 @@ impl WaitTimeoutResult {
 
 pub struct Event(UnsafeCell<evl_event>);
 
+unsafe impl Send for Event {}
+unsafe impl Sync for Event {}
+
 impl Event {
     pub fn new(builder: Builder) -> Result<Self, Error> {
         let this = Self(UnsafeCell::new(unsafe {
