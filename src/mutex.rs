@@ -139,8 +139,8 @@ pub struct Mutex<T: ?Sized> {
     data: UnsafeCell<T>,
 }
 
-unsafe impl<T: Sync + Send> Send for Mutex<T> {}
-unsafe impl<T: Sync + Send> Sync for Mutex<T> {}
+unsafe impl<T: ?Sized + Send> Send for Mutex<T> {}
+unsafe impl<T: ?Sized + Send> Sync for Mutex<T> {}
 
 impl<T> Mutex<T> {
     /// Create a new mutex for guarding `data`, using the properties
